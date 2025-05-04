@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatGPT UI Clone</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/13.0.1/markdown-it.min.js"></script>
+</head>
+<body>
+  <div class="main-container">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-item">
+          <img src="{{ url_for('static', filename='templates/ChatGPT-Logo.svg.png') }}" alt="ChatGPT" class="logo" />
+          <span>ChatGPT</span>
+        </div>
+      </div>
+      
+      <div class="sidebar-search">
+        <div class="search-container">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search" class="search-input" />
+        </div>
+      </div>
+      
+      <div class="sidebar-item">
+        <i class="fas fa-book"></i>
+        <span>Library</span>
+        <span class="count">1</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <i class="fas fa-compass"></i>
+        <span>Explore GPTs</span>
+      </div>
+      
+      <div class="sidebar-section-title">Today</div>
+      
+      <div class="sidebar-item">
+        <span>Cybersecurity Features for C</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <span>ChatGPT UI Replication</span>
+      </div>
+      
+      <div class="sidebar-section-title">Yesterday</div>
+      
+      <div class="sidebar-item">
+        <span>Gemini Features for Spotify</span>
+      </div>
+      
+      <div class="sidebar-section-title">Previous 30 Days</div>
+      
+      <div class="sidebar-item">
+        <span>Streamlit AI Security Tool</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <span>Decision Scientist Role Overview</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <span>AI Stock Analysis Tool</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <span>Salesforce Decision Scientist</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <span>Portfolio Web App Plan</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <span>FDS Data Science Role</span>
+      </div>
+      
+      <div class="sidebar-item">
+        <span>PortfolioPro UI Design</span>
+      </div>
+      
+      <div class="sidebar-item upgrade">
+        <i class="fas fa-crown"></i>
+        <div class="upgrade-text">
+          <span class="upgrade-title">Upgrade plan</span>
+          <span class="upgrade-subtitle">More access to the best models</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="top-nav">
+      <div class="nav-left">
+        <button class="toggle-sidebar-btn">
+          <i class="fas fa-bars"></i>
+        </button>
+        <button class="new-chat-btn">
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+      
+      <div class="nav-center">
+        <div class="model-selector">
+          ChatGPT <i class="fas fa-chevron-down"></i>
+        </div>
+      </div>
+      
+      <div class="nav-right">
+        <button class="temp-btn">
+          <i class="fas fa-sliders-h"></i> Temporary
+        </button>
+        <div class="profile-pic">
+          <img src="https://via.placeholder.com/36" alt="Profile" />
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="welcome-text">What can I help with?</div>
+      </div>
+      
+      <div class="input-container">
+        <div class="prompt-tools">
+          <button class="tool-button">
+            <i class="fas fa-plus"></i>
+          </button>
+          <button class="tool-button">
+            <i class="fas fa-globe"></i> Search
+          </button>
+          <button class="tool-button">
+            <i class="fas fa-lightbulb"></i> Reason
+          </button>
+          <button class="tool-button">
+            <i class="fas fa-search"></i> Deep research
+          </button>
+          <button class="tool-button">
+            <i class="fas fa-image"></i> Create image
+          </button>
+          <button class="tool-button">
+            <i class="fas fa-ellipsis-h"></i>
+          </button>
+        </div>
+        
+        <div class="input-wrapper">
+          <textarea 
+            id="user-input" 
+            class="input-field" 
+            placeholder="Ask anything"
+            rows="1"
+            onkeydown="handleKeyPress(event)"
+            oninput="checkSensitiveInfo(this.value); autoResize(this);"
+          ></textarea>
+          <button class="voice-button">
+            <i class="fas fa-microphone"></i>
+          </button>
+          <button class="send-button" onclick="sendPrompt()">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+          <button class="verify-button" onclick="verifyContent()" title="Verify AI-Origin">
+            <i class="fas fa-shield-alt"></i>
+          </button>
+        </div>
+        
+        <div class="input-footer">
+          ChatGPT can make mistakes. Consider checking important information.
+        </div>
+      </div>
+    
+      <!-- Add a loading spinner -->
+      <div id="loading-spinner" class="loading-spinner" style="display: none;">
+        <div class="spinner"></div>
+      </div>
+    
+      <!-- Add sensitive info warning -->
+      <div id="sensitive-warning" class="sensitive-warning" style="display: none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Please be careful about sharing sensitive information.</span>
+      </div>
+    
+      <!-- Add confirmation dialog -->
+      <div id="confirmation-dialog" class="confirmation-dialog" style="display: none;">
+        <div class="confirmation-content">
+          <div class="confirmation-header">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Safety Check</h3>
+          </div>
+          <div class="confirmation-message" id="confirmation-message"></div>
+          <div class="confirmation-actions">
+            <button class="confirmation-button cancel" onclick="cancelRequest()">
+              Cancel
+            </button>
+            <button class="confirmation-button confirm" onclick="confirmRequest()">
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add verification result dialog -->
+      <div id="verification-dialog" class="confirmation-dialog" style="display: none;">
+        <div class="confirmation-content">
+          <div class="confirmation-header">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Content Verification</h3>
+          </div>
+          <div class="verification-result" id="verification-result"></div>
+          <div class="confirmation-actions">
+            <button class="confirmation-button confirm" onclick="hideVerificationDialog()">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        let pendingPrompt = null;
+        let pendingConfirmation = null;
+
+        // List of sensitive information patterns
+        const sensitivePatterns = [
+          /password/i,
+          /credit\s*card/i,
+          /ssn|social\s*security/i,
+          /bank\s*account/i,
+          /address/i,
+          /phone\s*number/i,
+          /email\s*address/i,
+          /personal\s*information/i,
+          /confidential/i,
+          /secret/i
+        ];
+
+        function checkSensitiveInfo(text) {
+          const warning = document.getElementById('sensitive-warning');
+          const hasSensitiveInfo = sensitivePatterns.some(pattern => pattern.test(text));
+          warning.style.display = hasSensitiveInfo ? 'flex' : 'none';
+        }
+
+        function handleKeyPress(event) {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendPrompt();
+          }
+        }
+        
+        function autoResize(textarea) {
+          textarea.style.height = 'auto';
+          textarea.style.height = (textarea.scrollHeight) + 'px';
+        }
+    
+        function showThinkingIndicator() {
+          const chatMessages = document.getElementById("chat-messages");
+          const thinkingMessage = document.createElement("div");
+          thinkingMessage.className = "message ai-message thinking";
+          thinkingMessage.id = "thinking-indicator";
+          thinkingMessage.innerHTML = `
+            <div class="message-content">
+              <div class="thinking-dots">
+                <span>.</span><span>.</span><span>.</span>
+              </div>
+            </div>
+          `;
+          chatMessages.appendChild(thinkingMessage);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeThinkingIndicator() {
+          const thinkingIndicator = document.getElementById("thinking-indicator");
+          if (thinkingIndicator) {
+            thinkingIndicator.remove();
+          }
+        }
+
+        function showConfirmationDialog(message) {
+          const dialog = document.getElementById('confirmation-dialog');
+          const messageElement = document.getElementById('confirmation-message');
+          messageElement.textContent = message;
+          dialog.style.display = 'flex';
+        }
+
+        function hideConfirmationDialog() {
+          const dialog = document.getElementById('confirmation-dialog');
+          dialog.style.display = 'none';
+        }
+
+        function cancelRequest() {
+          hideConfirmationDialog();
+          pendingPrompt = null;
+          pendingConfirmation = null;
+        }
+
+        function confirmRequest() {
+          hideConfirmationDialog();
+          if (pendingPrompt && pendingConfirmation) {
+            sendPromptToBackend(pendingPrompt, pendingConfirmation);
+          }
+        }
+
+        function showError(message, details = null) {
+          const errorMessage = document.createElement("div");
+          errorMessage.className = "message error-message";
+          
+          let errorContent = `<div class="message-content">${message}</div>`;
+          if (details && Array.isArray(details)) {
+            errorContent += `<div class="error-details">
+              <ul>
+                ${details.map(detail => `<li>${detail}</li>`).join('')}
+              </ul>
+            </div>`;
+          }
+          
+          errorMessage.innerHTML = errorContent;
+          document.getElementById("chat-messages").appendChild(errorMessage);
+        }
+
+        // Initialize markdown-it
+        const md = window.markdownit({
+          html: false,
+          linkify: true,
+          typographer: true
+        });
+
+        // Update the message display function
+        function displayMessage(content, isAI = false) {
+          const chatMessages = document.getElementById("chat-messages");
+          const message = document.createElement("div");
+          message.className = `message ${isAI ? 'ai-message' : 'user-message'}`;
+          
+          // Convert markdown to HTML if it's an AI message
+          const formattedContent = isAI ? md.render(content) : content;
+          message.innerHTML = `<div class="message-content">${formattedContent}</div>`;
+          
+          chatMessages.appendChild(message);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Update sendPromptToBackend function
+        function sendPromptToBackend(prompt, confirmationData = null) {
+          showThinkingIndicator();
+
+          fetch('/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              prompt,
+              confirmation_data: confirmationData
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            removeThinkingIndicator();
+
+            if (data.error) {
+              showError(data.error, data.details);
+            } else {
+              // Display user message
+              displayMessage(prompt, false);
+              // Display AI response with markdown formatting
+              displayMessage(data.response, true);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            removeThinkingIndicator();
+            showError('Sorry, there was an error processing your request.');
+          });
+        }
+
+        // Update sendPrompt function
+        function sendPrompt() {
+          const input = document.getElementById("user-input");
+          const prompt = input.value.trim();
+          
+          if (!prompt) return;
+
+          // Clear input and hide sensitive warning
+          input.value = "";
+          input.style.height = 'auto';
+          document.getElementById('sensitive-warning').style.display = 'none';
+
+          // Show thinking indicator
+          showThinkingIndicator();
+
+          // First, check for potential issues
+          fetch('/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              prompt,
+              check_safety: true 
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            removeThinkingIndicator();
+
+            if (data.error) {
+              showError(data.error, data.details);
+              return;
+            }
+
+            if (data.requires_confirmation) {
+              pendingPrompt = prompt;
+              pendingConfirmation = data.confirmation_data;
+              showConfirmationDialog(data.confirmation_message);
+            } else {
+              sendPromptToBackend(prompt);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            removeThinkingIndicator();
+            showError('Sorry, there was an error processing your request.');
+          });
+        }
+
+        function verifyContent() {
+          const input = document.getElementById("user-input");
+          const content = input.value.trim();
+          
+          if (!content) {
+            showError('Please paste content to verify.');
+            return;
+          }
+
+          showThinkingIndicator();
+
+          fetch('/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+              prompt: content,
+              verify: true
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            removeThinkingIndicator();
+            if (data.error) {
+              showError(data.error);
+              return;
+            }
+            showVerificationResult(data);
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            removeThinkingIndicator();
+            showError('Sorry, there was an error verifying the content.');
+          });
+        }
+
+        function showVerificationResult(data) {
+          const dialog = document.getElementById('verification-dialog');
+          const resultElement = document.getElementById('verification-result');
+          
+          if (data.verified) {
+            const metadata = data.metadata;
+            resultElement.innerHTML = `
+              <div class="verification-success">
+                <i class="fas fa-check-circle"></i>
+                <p>✅ Verified: Created using ChatGPT on ${metadata.generated_at}</p>
+                <p class="verification-details">User ID: ${metadata.user_id}</p>
+              </div>
+            `;
+          } else {
+            resultElement.innerHTML = `
+              <div class="verification-failure">
+                <i class="fas fa-times-circle"></i>
+                <p>❌ Not verified: ${data.message || 'No valid watermark found in the content.'}</p>
+              </div>
+            `;
+          }
+          
+          dialog.style.display = 'flex';
+        }
+
+        function hideVerificationDialog() {
+          const dialog = document.getElementById('verification-dialog');
+          dialog.style.display = 'none';
+        }
+        
+        // Toggle sidebar on mobile
+        document.querySelector('.toggle-sidebar-btn').addEventListener('click', function() {
+          document.querySelector('.sidebar').classList.toggle('active');
+        });
+      </script>
+    </div>
+  </div>
+</body>
+</html>
